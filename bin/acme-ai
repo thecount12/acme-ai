@@ -17,8 +17,12 @@ fn findlux {
 		echo $home/bin/lux
 		return
 	}
-	if (which lux >/dev/null >[2=1]) {
-		echo lux
+	if (test -x /acme/bin/$objtype/lux) {
+		echo /acme/bin/$objtype/lux
+		return
+	}
+	if (test -x /bin/lux) {
+		echo /bin/lux
 		return
 	}
 	echo 8.out
@@ -56,7 +60,15 @@ fn runlux {
 	resp=`{$luxbin $script}
 	status=$status
 	cd $home
-	if (~ $status error || ~ $status compile || ~ $status runtime) {
+	if (~ $status error) {
+		echo '# acme-ai: lux failed ('^$status^')'
+		return
+	}
+	if (~ $status compile) {
+		echo '# acme-ai: lux failed ('^$status^')'
+		return
+	}
+	if (~ $status runtime) {
 		echo '# acme-ai: lux failed ('^$status^')'
 		return
 	}
@@ -130,8 +142,8 @@ fn acme-ai {
 		echo 'Select or type a message, then middle-click Send.'
 		echo ''
 		echo 'Source window:' $srcwin
-		echo -n 'Put Send in tag: Send '{acme-ai chat-send $winid}''
-		# Note: user adds Send to tag column manually on first use, or via guide.
+		echo 'Add to tag column 1 (middle-click inside braces):'
+		echo '{'^$home^'/bin/acme-ai chat-send '$winid^'}'
 
 	case *
 		echo acme-ai: unknown action $action >[1=2]
