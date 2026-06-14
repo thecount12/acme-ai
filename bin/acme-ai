@@ -1,22 +1,25 @@
 #!/bin/rc
 # acme-ai — Lux + Ollama integration for 9front acme
 # Usage: acme-ai action
-# winid comes from the acme environment ($winid), not from the tag line.
+# winid is exported by acme in the environment.
 
 lib=$home/lib/acme-ai
 acmeroot=/mnt/acme
-winid=
 
 fn initacme {
-	# Prefer acme's exported winid; optional numeric override as $1.
-	if (~ $#* 1 && ! ~ $1 '$winid' && ! ~ $1 '') {
-		winid=$1
-	}
-	if not {
-		winid=$"winid"
+	# Do not assign winid= at top level; that clears acme's exported winid.
+	if (~ $#* 1) {
+		if (! ~ $1 '$winid') {
+			if (! ~ $1 '') {
+				winid=$1
+			}
+		}
 	}
 	if (~ $#winid 0) {
-		echo acme-ai: winid not set — run from acme >[1=2]
+		winid=$winid
+	}
+	if (~ $#winid 0) {
+		echo acme-ai: winid not set - run from acme >[1=2]
 		exit nowinid
 	}
 	if (test -e /mnt/acme/$winid/rdsel) {
@@ -63,7 +66,7 @@ fn writerequest {
 	rds=`{acmefile rdsel}
 	addrf=`{acmefile addr}
 	if (! test -d $lib) {
-		echo acme-ai: missing $lib — run install.rc >[1=2]
+		echo acme-ai: missing $lib - run install.rc >[1=2]
 		exit nolib
 	}
 	sel=`{cat $rds}
@@ -168,10 +171,10 @@ fn acme-ai {
 
 	case chat-ui
 		srcwin=$1
-		echo 'Select or type a message, then middle-click inside braces:'
+		echo 'Add to tag column 1, middle-click inside quotes:'
 		echo ''
 		echo 'Source window:' $srcwin
-		echo '{'^$home^'/bin/acme-ai chat-send'^'}'
+		echo '''aichat'''
 
 	case *
 		echo acme-ai: unknown action $action >[1=2]

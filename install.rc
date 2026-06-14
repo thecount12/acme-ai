@@ -1,5 +1,5 @@
 #!/bin/rc
-# Install acme-ai into $home/lib/acme-ai and $home/bin/acme-ai
+# Install acme-ai into $home/lib/acme-ai, $home/bin, and /acme/bin/$objtype
 
 if (~ $#* 0) {
 	src=.
@@ -13,13 +13,35 @@ if (! test -d $src/lib) {
 	exit nolib
 }
 
+if (~ $objtype '') {
+	objtype=`{echo $cputype}
+}
+
 mkdir -p $home/lib/acme-ai
 mkdir -p $home/bin
+mkdir -p /acme/bin/$objtype
 
 cp $src/lib/*.lux $home/lib/acme-ai/
 cp $src/lib/config.json $home/lib/acme-ai/
 cp $src/bin/acme-ai $home/bin/acme-ai
-chmod +x $home/bin/acme-ai
+cp $src/bin/aixplain $home/bin/aixplain
+cp $src/bin/aianalyze $home/bin/aianalyze
+cp $src/bin/aifix $home/bin/aifix
+cp $src/bin/aichat $home/bin/aichat
+cp $src/bin/aichat-send $home/bin/aichat-send
+chmod +x $home/bin/acme-ai $home/bin/aixplain $home/bin/aianalyze $home/bin/aifix $home/bin/aichat $home/bin/aichat-send
 
-echo installed to $home/lib/acme-ai and $home/bin/acme-ai
+cp $home/bin/aixplain /acme/bin/$objtype/aixplain
+cp $home/bin/aianalyze /acme/bin/$objtype/aianalyze
+cp $home/bin/aifix /acme/bin/$objtype/aifix
+cp $home/bin/aichat /acme/bin/$objtype/aichat
+cp $home/bin/aichat-send /acme/bin/$objtype/aichat-send
+chmod +x /acme/bin/$objtype/aixplain /acme/bin/$objtype/aianalyze /acme/bin/$objtype/aifix /acme/bin/$objtype/aichat /acme/bin/$objtype/aichat-send
+
+echo installed lib to $home/lib/acme-ai
+echo installed bin to $home/bin/acme-ai and /acme/bin/$objtype/aixplain ...
 echo edit $home/lib/acme-ai/config.json for host and models
+echo
+echo acme tag column 1 - middle-click INSIDE the quotes:
+echo '  | Look | '''aixplain''' | '''aianalyze''' | '''aifix''''
+echo select code in body first, then click inside '''aixplain''' etc.

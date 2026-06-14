@@ -72,33 +72,36 @@ hget http://macmini:11434/api/tags
 
 ## acme tag setup
 
-Add to window tag template (or manual tag line in **column 1**). Middle-click **inside** the `{...}` braces (not on a label word). acme sets `$winid` in the environment automatically — do not put `$winid` in the tag:
+acme runs the text **between single quotes** in column 1. Keep it simple: **one word, no spaces, no `=`, no `$winid`, no `{` braces**.
+
+After `rc install.rc`, add to tag column 1 (middle-click **inside** the quotes, not on the word outside):
 
 ```
-| '{/usr/william/bin/acme-ai explain}' | '{/usr/william/bin/acme-ai analyze}' | '{/usr/william/bin/acme-ai fix}'
+| Look | 'aixplain' | 'aianalyze' | 'aifix'
 ```
 
-Or after copying to `/acme/bin/$objtype/acme-ai`:
-
-```
-| '{acme-ai explain}' | '{acme-ai analyze}' | '{acme-ai fix}'
-```
+These are tiny wrappers installed to `/acme/bin/$objtype/` (acme always has that on `$path`).
 
 **Usage:**
 
-1. Select code in the body
-2. Middle-click **inside** the `{...}` block for explain/analyze/fix in tag column 1
-3. Response is inserted at the cursor
+1. Select code in the **body**
+2. Clear any selection in the tag (button-1 click in tag)
+3. Middle-click **inside** `'aixplain'` (between the single quotes)
+4. Response is inserted at the cursor
+
+Do **not** highlight the tag text before middle-clicking — that runs the selection as a command instead.
+
+Do **not** use `{...}`, paths, or `$winid` in the tag — acme passes the quoted text to rc and complex strings cause `token '=' syntax error` or `/bin/{...}` errors.
 
 ### Chat window
 
-Middle-click **Chat** on a source window (optionally with code selected for context). A new acme window opens. Add this to the chat window tag (middle-click inside braces):
+Middle-click **Chat** (`'aichat'`) on a source window. In the new chat window tag, add:
 
 ```
-'{/usr/william/bin/acme-ai chat-send}'
+'aichat-send'
 ```
 
-Type or select your message, middle-click **Send**. Conversation history is stored in `$home/lib/acme-ai/chat-<source-winid>.json`.
+Middle-click **inside** `'aichat-send'` with your message selected (or typed in the body).
 
 ## Request files
 
