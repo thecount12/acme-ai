@@ -1,0 +1,58 @@
+// Prompt templates for acme-ai actions.
+
+fun promptAnalyze(selection, fileAddr) {
+    var header = "Analyze the following code from " + fileAddr + ".\n";
+    header = header + "Explain what it does, note any bugs or risks, and suggest improvements.\n\n";
+    return header + selection;
+}
+
+fun promptExplain(selection, fileAddr) {
+    var header = "Briefly explain the following code from " + fileAddr + ".\n\n";
+    return header + selection;
+}
+
+fun promptFix(selection, fileAddr) {
+    var header = "Review the following code from " + fileAddr + ".\n";
+    header = header + "Suggest a minimal fix as a unified diff. Explain the change briefly after the diff.\n\n";
+    return header + selection;
+}
+
+fun promptChat(userMessage, fileAddr, codeContext) {
+    var header = "You are helping with code in " + fileAddr + ".\n\n";
+    if (codeContext != nil & len(codeContext) > 0) {
+        header = header + "Context from the source window:\n```\n" + codeContext + "\n```\n\n";
+    }
+    return header + userMessage;
+}
+
+fun buildPrompt(action, selection, fileAddr) {
+    if (action == "analyze") {
+        return promptAnalyze(selection, fileAddr);
+    }
+    if (action == "explain") {
+        return promptExplain(selection, fileAddr);
+    }
+    if (action == "fix") {
+        return promptFix(selection, fileAddr);
+    }
+    return nil;
+}
+
+fun modelForAction(config, action) {
+    if (config == nil | config.models == nil) {
+        return nil;
+    }
+    if (action == "analyze") {
+        return config.models.analyze;
+    }
+    if (action == "explain") {
+        return config.models.explain;
+    }
+    if (action == "fix") {
+        return config.models.fix;
+    }
+    if (action == "chat") {
+        return config.models.chat;
+    }
+    return nil;
+}

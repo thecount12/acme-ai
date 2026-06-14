@@ -1,0 +1,10 @@
+{
+  "host": "macmini",
+  "port": 11434,
+  "models": {
+    "analyze": "deepseek-r1:32b",
+    "explain": "qwen2.5:14b",
+    "fix": "qwen2.5-coder:32b",
+    "chat": "qwen2.5-coder:32b"
+  }
+}

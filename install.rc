@@ -1,0 +1,25 @@
+#!/bin/rc
+# Install acme-ai into $home/lib/acme-ai and $home/bin/acme-ai
+
+if (~ $#* 0) {
+	src=.
+}
+if not {
+	src=$1
+}
+
+if (! test -d $src/lib) {
+	echo install.rc: missing $src/lib >[1=2]
+	exit nolib
+}
+
+mkdir -p $home/lib/acme-ai
+mkdir -p $home/bin
+
+cp $src/lib/*.lux $home/lib/acme-ai/
+cp $src/lib/config.json $home/lib/acme-ai/
+cp $src/bin/acme-ai $home/bin/acme-ai
+chmod +x $home/bin/acme-ai
+
+echo installed to $home/lib/acme-ai and $home/bin/acme-ai
+echo edit $home/lib/acme-ai/config.json for host and models

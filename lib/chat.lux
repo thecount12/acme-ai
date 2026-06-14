@@ -1,0 +1,102 @@
+// Chat turn handler: append user message to history, call Ollama chat API.
+
+import "ollama.lux";
+import "prompts.lux";
+
+fun readTrimmed(path) {
+    var text = readFile(path);
+    if (text == nil) {
+        return nil;
+    }
+    var n = len(text);
+    if (n > 0 & strSlice(text, n - 1, n) == "\n") {
+        return strSlice(text, 0, n - 1);
+    }
+    return text;
+}
+
+fun loadConfig() {
+    var raw = readFile("config.json");
+    if (raw == nil) {
+        return nil;
+    }
+    return parseJSON(raw);
+}
+
+fun historyPath() {
+    var session = readTrimmed("chat.session");
+    if (session == nil) {
+        session = "default";
+    }
+    return "chat-" + session + ".json";
+}
+
+fun loadHistory() {
+    var path = historyPath();
+    var raw = readFile(path);
+    if (raw == nil | len(raw) == 0) {
+        return "[]";
+    }
+    return raw;
+}
+
+fun appendMessage(messagesJson, role, content) {
+    var inner = toJSON(content);
+    var msg = "{\"role\":\"" + role + "\",\"content\":" + inner + "}";
+    if (messagesJson == "[]") {
+        return "[" + msg + "]";
+    }
+    var trimmed = strSlice(messagesJson, 0, len(messagesJson) - 1);
+    return trimmed + "," + msg + "]";
+}
+
+fun chatTurn() {
+    var config = loadConfig();
+    if (config == nil) {
+        print "# acme-ai: could not read config.json";
+        return;
+    }
+
+    var userMessage = readFile("chat.message");
+    if (userMessage == nil | len(userMessage) == 0) {
+        print "# acme-ai: no chat message";
+        return;
+    }
+
+    var addr = readTrimmed("request.addr");
+    if (addr == nil) {
+        addr = "(unknown)";
+    }
+
+    var context = readFile("chat.context");
+    if (context == nil) {
+        context = "";
+    }
+
+    var model = modelForAction(config, "chat");
+    if (model == nil) {
+        print "# acme-ai: chat model not configured";
+        return;
+    }
+
+    var port = config.port;
+    if (port == nil) {
+        port = 11434;
+    }
+
+    var messages = loadHistory();
+    var userPrompt = promptChat(userMessage, addr, context);
+    messages = appendMessage(messages, "user", userPrompt);
+
+    var answer = ollamaChatMessages(config.host, port, model, messages);
+    if (answer == nil | len(answer) == 0) {
+        print "# acme-ai: Ollama chat request failed";
+        return;
+    }
+
+    messages = appendMessage(messages, "assistant", answer);
+    writeFile(historyPath(), messages);
+    print answer;
+}
+
+chatTurn();

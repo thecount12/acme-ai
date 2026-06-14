@@ -1,0 +1,68 @@
+// Generic Ollama HTTP client (no acme dependencies).
+// Future candidate for upstream Lux contribution.
+
+fun ollamaUrl(host, port, path) {
+    return "http://" + host + ":" + port + path;
+}
+
+class GenerateReq {
+    init(model, prompt) {
+        this.model = model;
+        this.prompt = prompt;
+        this.stream = false;
+    }
+}
+
+fun ollamaGenerate(host, port, model, prompt) {
+    var req = GenerateReq(model, prompt);
+    var body = toJSON(req);
+    if (body == nil) {
+        return nil;
+    }
+
+    var url = ollamaUrl(host, port, "/api/generate");
+    var resp = httpPost(url, body);
+    if (resp == nil) {
+        return nil;
+    }
+
+    var parsed = parseJSON(resp);
+    if (parsed == nil) {
+        return nil;
+    }
+    return parsed.response;
+}
+
+fun ollamaChatMessages(host, port, model, messagesJson) {
+    var body = "{\"model\":\"" + model + "\",\"messages\":" + messagesJson + ",\"stream\":false}";
+    var url = ollamaUrl(host, port, "/api/chat");
+    var resp = httpPost(url, body);
+    if (resp == nil) {
+        return nil;
+    }
+
+    var parsed = parseJSON(resp);
+    if (parsed == nil) {
+        return nil;
+    }
+    var msg = parsed.message;
+    if (msg == nil) {
+        return nil;
+    }
+    return msg.content;
+}
+
+fun ollamaChat(host, port, model, role, content) {
+    var msg = "{\"role\":\"" + role + "\",\"content\":" + toJSON(content) + "}";
+    var messages = "[" + msg + "]";
+    return ollamaChatMessages(host, port, model, messages);
+}
+
+fun ollamaTags(host, port) {
+    var url = ollamaUrl(host, port, "/api/tags");
+    var resp = httpGet(url);
+    if (resp == nil) {
+        return nil;
+    }
+    return parseJSON(resp);
+}

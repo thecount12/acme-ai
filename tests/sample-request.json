@@ -1,0 +1,5 @@
+{
+  "action": "analyze",
+  "addr": "/sys/src/cmd/acme/acme.c",
+  "selection": "void example(void) {\n\tprint(\"hello\");\n}"
+}

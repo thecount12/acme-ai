@@ -1,0 +1,86 @@
+// Reads request files from $home/lib/acme-ai (cwd) and calls Ollama.
+// rc writes request.action, request.addr, request.sel before invoking this script.
+
+import "ollama.lux";
+import "prompts.lux";
+
+fun readTrimmed(path) {
+    var text = readFile(path);
+    if (text == nil) {
+        return nil;
+    }
+    var n = len(text);
+    if (n > 0 & strSlice(text, n - 1, n) == "\n") {
+        return strSlice(text, 0, n - 1);
+    }
+    return text;
+}
+
+fun loadConfig() {
+    var raw = readFile("config.json");
+    if (raw == nil) {
+        return nil;
+    }
+    return parseJSON(raw);
+}
+
+fun loadRequest() {
+    var action = readTrimmed("request.action");
+    var addr = readTrimmed("request.addr");
+    var selection = readFile("request.sel");
+    if (action == nil | selection == nil) {
+        return nil;
+    }
+    if (addr == nil) {
+        addr = "(unknown)";
+    }
+    class Request {
+        init(action, addr, selection) {
+            this.action = action;
+            this.addr = addr;
+            this.selection = selection;
+        }
+    }
+    return Request(action, addr, selection);
+}
+
+fun dispatch() {
+    var config = loadConfig();
+    if (config == nil) {
+        print "# acme-ai: could not read config.json";
+        return;
+    }
+
+    var req = loadRequest();
+    if (req == nil) {
+        print "# acme-ai: could not read request files";
+        return;
+    }
+
+    var model = modelForAction(config, req.action);
+    if (model == nil) {
+        print "# acme-ai: unknown action or missing model: " + req.action;
+        return;
+    }
+
+    var prompt = buildPrompt(req.action, req.selection, req.addr);
+    if (prompt == nil) {
+        print "# acme-ai: unknown action: " + req.action;
+        return;
+    }
+
+    var port = config.port;
+    if (port == nil) {
+        port = 11434;
+    }
+
+    var answer = ollamaGenerate(config.host, port, model, prompt);
+    if (answer == nil | len(answer) == 0) {
+        print "# acme-ai: Ollama request failed";
+        return;
+    }
+
+    print answer;
+}
+
+dispatch();

@@ -1,0 +1,11 @@
+# Request files written at runtime on 9front
+request.action
+request.addr
+request.sel
+chat.message
+chat.context
+chat.session
+chat-*.json
+
+# Editor
+.DS_Store

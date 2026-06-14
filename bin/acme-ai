@@ -1,0 +1,142 @@
+#!/bin/rc
+# acme-ai — Lux + Ollama integration for 9front acme
+# Usage: acme-ai action winid
+
+lib=$home/lib/acme-ai
+
+fn findlux {
+	# Prefer installed lux binary, then plan9 mk output name.
+	if (~ $objtype '') {
+		objtype=`{echo $cputype}
+	}
+	if (test -x $home/bin/$objtype/lux) {
+		echo $home/bin/$objtype/lux
+		return
+	}
+	if (test -x $home/bin/lux) {
+		echo $home/bin/lux
+		return
+	}
+	if (which lux >/dev/null >[2=1]) {
+		echo lux
+		return
+	}
+	echo 8.out
+}
+
+fn writerequest {
+	action=$1
+	winid=$2
+	if (! test -d $lib) {
+		echo acme-ai: missing $lib — run install.rc >[1=2]
+		exit nolib
+	}
+	if (! test -e /mnt/acme/$winid/rdsel) {
+		echo acme-ai: bad winid $winid >[1=2]
+		exit badwin
+	}
+	sel=`{cat /mnt/acme/$winid/rdsel}
+	if (~ $#sel 0) {
+		echo acme-ai: no selection >[1=2]
+		exit nsel
+	}
+	addr=`{cat /mnt/acme/$winid/addr}
+	if (~ $#addr 0) {
+		addr='(unknown)'
+	}
+	echo -n $action > $lib/request.action
+	echo -n $addr > $lib/request.addr
+	echo -n $sel > $lib/request.sel
+}
+
+fn runlux {
+	script=$1
+	luxbin=`{findlux}
+	cd $lib
+	resp=`{$luxbin $script}
+	status=$status
+	cd $home
+	if (~ $status error || ~ $status compile || ~ $status runtime) {
+		echo '# acme-ai: lux failed ('^$status^')'
+		return
+	}
+	if (~ $#resp 0) {
+		echo '# acme-ai: empty response'
+		return
+	}
+	echo -n $resp
+}
+
+fn insertresult {
+	winid=$1
+	text=$2
+	echo -n 'insert ' > /mnt/acme/$winid/ctl
+	echo -n $text > /mnt/acme/$winid/wrsel
+}
+
+fn acme-ai {
+	action=$1
+	winid=$2
+	if (! ~ $#* 2) {
+		echo usage: acme-ai action winid >[1=2]
+		echo actions: analyze explain fix chat chat-send >[1=2]
+		exit usage
+	}
+
+	switch ($action) {
+	case analyze explain fix
+		writerequest $action $winid
+		resp=`{runlux dispatch.lux}
+		insertresult $winid $resp
+
+	case chat
+		# Open a chat window; seed context from current selection if any.
+		sel=`{cat /mnt/acme/$winid/rdsel}
+		addr=`{cat /mnt/acme/$winid/addr}
+		if (~ $#addr 0) {
+			addr='(unknown)'
+		}
+		if (! test -d $lib) {
+			echo acme-ai: missing $lib >[1=2]
+			exit nolib
+		}
+		echo -n $winid > $lib/chat.session
+		echo -n $addr > $lib/request.addr
+		echo -n $sel > $lib/chat.context
+		echo '[]' > $lib/chat-^$winid^.json
+		win acme-ai chat-ui $winid
+
+	case chat-send
+		# Send selection (or body) from the chat window as the next message.
+		if (! test -d $lib) {
+			echo acme-ai: missing $lib >[1=2]
+			exit nolib
+		}
+		sel=`{cat /mnt/acme/$winid/rdsel}
+		if (~ $#sel 0) {
+			sel=`{cat /mnt/acme/$winid/body}
+		}
+		if (~ $#sel 0) {
+			echo acme-ai: nothing to send >[1=2]
+			exit nomsg
+		}
+		echo -n $sel > $lib/chat.message
+		resp=`{runlux chat.lux}
+		insertresult $winid $resp
+
+	case chat-ui
+		# Runs inside win(1): set tag and initial instructions.
+		srcwin=$1
+		echo 'Select or type a message, then middle-click Send.'
+		echo ''
+		echo 'Source window:' $srcwin
+		echo -n 'Put Send in tag: Send '{acme-ai chat-send $winid}''
+		# Note: user adds Send to tag column manually on first use, or via guide.
+
+	case *
+		echo acme-ai: unknown action $action >[1=2]
+		exit badaction
+	}
+}
+
+acme-ai $*

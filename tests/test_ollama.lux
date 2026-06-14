@@ -1,0 +1,58 @@
+// Test Ollama connectivity (run from Mac with local Ollama, or on 9front with network).
+// Usage:
+//   cd tests && /path/to/lux test_ollama.lux
+
+import "../lib/ollama.lux";
+
+fun loadConfig() {
+    var raw = readFile("../lib/config.json");
+    if (raw == nil) {
+        print "FAIL: could not read config.json (run from lib/ directory)";
+        return nil;
+    }
+    return parseJSON(raw);
+}
+
+print "=== acme-ai Ollama test ===";
+
+var config = loadConfig();
+if (config == nil) {
+    exit(1);
+}
+
+var port = config.port;
+if (port == nil) {
+    port = 11434;
+}
+
+print "Host: " + config.host + ":" + port;
+
+var tags = ollamaTags(config.host, port);
+if (tags == nil) {
+    print "FAIL: could not reach Ollama at " + config.host;
+    print "Ensure Ollama is running and host is reachable.";
+    exit(1);
+}
+print "OK: connected to Ollama";
+
+var model = config.models.explain;
+if (model == nil) {
+    model = "qwen2.5:14b";
+}
+
+print "Testing generate with model: " + model;
+var answer = ollamaGenerate(config.host, port, model, "Reply with exactly: lux-ok");
+if (answer == nil) {
+    print "FAIL: generate request failed";
+    exit(1);
+}
+
+print "Response: " + answer;
+if (strFind(answer, "lux-ok") >= 0 | strFind(answer, "lux") >= 0) {
+    print "OK: generate test passed";
+} else {
+    print "WARN: unexpected response (model may have paraphrased)";
+    print "OK: generate returned text";
+}
+
+print "=== test complete ===";
