@@ -23,9 +23,11 @@ if(! test -s $lib/request.sel){
 }
 
 addr='(unknown)'
-if(~ $#winid 1){
+if(test -e /mnt/acme/$winid/rdsel){
 	if(test -e /mnt/acme/$winid/addr)
 		addr=`{cat /mnt/acme/$winid/addr}
+}
+if(test -e /mnt/acme/acme/$winid/rdsel){
 	if(test -e /mnt/acme/acme/$winid/addr)
 		addr=`{cat /mnt/acme/acme/$winid/addr}
 }
@@ -46,10 +48,10 @@ if(! test -x $luxbin){
 cd $lib
 $luxbin dispatch.lux > response.txt
 
-if(~ $#winid 1){
-	$lib/aishow $action $addr
+if(test -e /mnt/acme/$winid/rdsel || test -e /mnt/acme/acme/$winid/rdsel){
+	$lib/aishow $action $addr >[1=2]
 	cat request.sel
 }
-if(~ $#winid 0){
+if not {
 	cat response.txt
 }

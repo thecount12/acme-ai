@@ -10,12 +10,9 @@ if(~ $#action 0){
 	exit usage
 }
 
-if(! ~ $addr '(unknown)'){
+winname=+AI
+if(test -f $addr)
 	winname=`{basename -d $addr}^/+AI
-}
-if(~ $addr '(unknown)'){
-	winname=+AI
-}
 
 dir=/mnt/wsys
 if(! test -f $dir/cons)
