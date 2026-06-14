@@ -84,7 +84,13 @@ Del Snarf | Look | t+ | t- | aixplain | aiexplain | aianalyze | aifix
 2. Highlight **`|aixplain`** or **`|aiexplain`** in the tag (column 1) — same as **`|t+`**
 3. Middle-click
 
-The script reads your selection from **stdin** and prints the answer to **stdout**. acme replaces the selection with the output — exactly like `t+` runs `sed`. No `$winid`, no `{` braces, no quotes in the tag.
+The AI reply opens in a **`+AI`** window next to your source file (same idea as **`+Errors`**). Your selected code stays in the editor — it is not replaced.
+
+From a shell pipe, output still goes to stdout:
+
+```rc
+echo 'int main()' | /acme/bin/aixplain
+```
 
 **Do not** middle-click only the code in the body — that runs C/rc code as a command. Always highlight the **tag command** (`|aixplain` or `|aiexplain`) while the body text is selected.
 

@@ -21,6 +21,8 @@ cp $src/lib/*.lux $home/lib/acme-ai/
 cp $src/lib/config.json $home/lib/acme-ai/
 cp $src/lib/config.rc $home/lib/acme-ai/
 cp $src/lib/common.rc $home/lib/acme-ai/
+cp $src/lib/runai $home/lib/acme-ai/runai
+cp $src/lib/aishow $home/lib/acme-ai/aishow
 cp $src/bin/acme-ai $home/bin/acme-ai
 cp $src/bin/aixplain $home/bin/aixplain
 cp $src/bin/aiexplain $home/bin/aiexplain
@@ -28,6 +30,7 @@ cp $src/bin/aianalyze $home/bin/aianalyze
 cp $src/bin/aifix $home/bin/aifix
 cp $src/bin/aichat $home/bin/aichat
 cp $src/bin/aichat-send $home/bin/aichat-send
+chmod +x $home/lib/acme-ai/runai $home/lib/acme-ai/aishow
 chmod +x $home/bin/acme-ai $home/bin/aixplain $home/bin/aiexplain $home/bin/aianalyze $home/bin/aifix $home/bin/aichat $home/bin/aichat-send
 
 cp $home/bin/aixplain /acme/bin/aixplain
@@ -45,3 +48,4 @@ echo
 echo acme tag column 1, same as t+:
 echo '  Del Snarf | Look | t+ | t- | aixplain | aiexplain | aianalyze | aifix'
 echo 'select code in body, highlight aixplain in tag, middle-click'
+echo 'response opens in +AI window (like +Errors); your code stays put'

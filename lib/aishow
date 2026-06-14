@@ -1,0 +1,37 @@
+#!/bin/rc
+# aishow action addr — open +AI window (aspell-style via /mnt/wsys)
+
+action=$1
+addr=$2
+lib=$home/lib/acme-ai
+
+if(~ $#action 0){
+	echo aishow: missing action >[1=2]
+	exit usage
+}
+
+if(! ~ $addr '(unknown)'){
+	winname=`{basename -d $addr}^/+AI
+}
+if(~ $addr '(unknown)'){
+	winname=+AI
+}
+
+dir=/mnt/wsys
+if(! test -f $dir/cons)
+	dir=/mnt/term/$dir
+id=`{cat $dir/new/ctl}
+id=$id(1)
+echo 'name '^$winname > $dir/$id/ctl
+{
+	echo $action':' $addr
+	echo
+	if(test -s $lib/response.txt)
+		cat $lib/response.txt
+	if(! test -s $lib/response.txt)
+		echo '# acme-ai: empty response'
+} > $dir/$id/body
+{
+	echo noscroll
+	echo clean
+}> $dir/$id/ctl

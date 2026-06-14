@@ -2,6 +2,7 @@
 request.action
 request.addr
 request.sel
+response.txt
 chat.message
 chat.context
 chat.session
