@@ -54,7 +54,7 @@ fn writerequest {
 	action=$1
 	rds=`{acmefile rdsel}
 	addrf=`{acmefile addr}
-	if not test -d $lib {
+	if(! test -d $lib){
 		echo acme-ai: missing $lib - run install.rc >[1=2]
 		exit nolib
 	}
@@ -129,7 +129,7 @@ fn acme-ai {
 		if(~ $#addr 0){
 			addr='(unknown)'
 		}
-		if not test -d $lib {
+		if(! test -d $lib){
 			echo acme-ai: missing $lib >[1=2]
 			exit nolib
 		}
@@ -140,7 +140,7 @@ fn acme-ai {
 		win acme-ai chat-ui $winid
 
 	case chat-send
-		if not test -d $lib {
+		if(! test -d $lib){
 			echo acme-ai: missing $lib >[1=2]
 			exit nolib
 		}
