@@ -1,2 +1,31 @@
 #!/bin/rc
-exec $home/bin/acme-ai chat
+# aichat - open chat window; optional stdin seeds context (like t+)
+
+lib=$home/lib/acme-ai
+sel=`{cat}
+addr='(unknown)'
+
+if(! ~ $#winid 0){
+	if(test -e /mnt/acme/$winid/addr)
+		addr=`{cat /mnt/acme/$winid/addr}
+	if(test -e /mnt/acme/acme/$winid/addr)
+		addr=`{cat /mnt/acme/acme/$winid/addr}
+}
+
+if(! test -d $lib){
+	echo acme-ai: missing $lib - run install.rc >[1=2]
+	exit nolib
+}
+
+if(! ~ $#winid 0){
+	echo -n $winid > $lib/chat.session
+}
+echo -n $addr > $lib/request.addr
+echo -n $sel > $lib/chat.context
+if(! ~ $#winid 0){
+	echo '[]' > $lib/chat-^$winid^.json
+}
+
+echo 'Chat window. Tag: | aichat-send |'
+echo 'Select message, highlight aichat-send, middle-click.'
+echo 'Source:' $addr

@@ -78,15 +78,15 @@ Put commands in `/acme/bin/` (like your `t+` and `t-` scripts). After `rc instal
 Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix
 ```
 
-**How to use (your t+ workflow):**
+**How to use (same as t+):**
 
-1. Select the code in the **body** you want explained
-2. Also highlight **`|aixplain`** in the tag (column 1) — same as you do for `|t+`
-3. Middle-click to run
+1. Select the code in the **body**
+2. Highlight **`|aixplain`** in the tag (column 1) — same as **`|t+`**
+3. Middle-click
 
-acme-ai reads the body selection from acme's `rdsel` file (via `$winid`). It does not read stdin like `t+` does — but the select-body + highlight-tag-command pattern is the same.
+The script reads your selection from **stdin** and prints the answer to **stdout**. acme replaces the selection with the output — exactly like `t+` runs `sed`. No `$winid`, no `{` braces, no quotes in the tag.
 
-Do **not** middle-click only the C/code selection in the body — that tries to run your C code as rc and gives errors like `token '( [SUB]' syntax error`.
+**Do not** middle-click only the code in the body — that runs C/rc code as a command. Always highlight the **tag command** (`|aixplain`) while the body text is selected.
 
 ### Chat window
 

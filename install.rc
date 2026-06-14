@@ -40,4 +40,4 @@ echo edit $home/lib/acme-ai/config.json
 echo
 echo acme tag column 1, same as t+:
 echo '  Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix'
-echo select code in body, highlight |aixplain in tag, middle-click
+echo 'select code in body, highlight aixplain in tag, middle-click'

@@ -1,3 +1,38 @@
 #!/bin/rc
-# aixplain - explain selected code via Ollama (same pattern as t+ in /acme/bin)
-exec $home/bin/acme-ai explain
+# aixplain - explain selection via Ollama (stdin/stdout, same as t+)
+
+lib=$home/lib/acme-ai
+sel=`{cat}
+if(~ $#sel 0){
+	echo acme-ai: no selection >[1=2]
+	exit nsel
+}
+
+addr='(unknown)'
+if(! ~ $#winid 0){
+	if(test -e /mnt/acme/$winid/addr)
+		addr=`{cat /mnt/acme/$winid/addr}
+	if(test -e /mnt/acme/acme/$winid/addr)
+		addr=`{cat /mnt/acme/acme/$winid/addr}
+}
+
+if(! test -d $lib){
+	echo acme-ai: missing $lib - run install.rc >[1=2]
+	exit nolib
+}
+
+echo -n explain > $lib/request.action
+echo -n $addr > $lib/request.addr
+echo -n $sel > $lib/request.sel
+
+if(~ $objtype '')
+	objtype=`{echo $cputype}
+luxbin=$home/bin/$objtype/lux
+if(! test -x $luxbin)
+	luxbin=$home/bin/lux
+if(! test -x $luxbin)
+	luxbin=8.out
+
+cd $lib
+resp=`{$luxbin dispatch.lux}
+echo -n $resp
