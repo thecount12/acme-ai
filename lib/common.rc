@@ -1,9 +1,10 @@
 #!/bin/rc
-# Shared helpers for /acme/bin/aixplain etc.
+# Legacy shared helpers (unused by /acme/bin scripts; kept flat like t+).
+# Plan 9 rc does not accept if(~ $objtype '') — use if(~ $#objtype 0) instead.
 
 fn findlux {
 	luxbin=
-	if(~ $objtype '')
+	if(~ $#objtype 0)
 		objtype=`{echo $cputype}
 	if(test -x $home/bin/$objtype/lux)
 		luxbin=$home/bin/$objtype/lux
@@ -14,53 +15,4 @@ fn findlux {
 		if(test -x /bin/lux)
 			luxbin=/bin/lux
 	echo $luxbin
-}
-
-fn runlux {
-	action=$1
-	lib=$home/lib/acme-ai
-	luxbin=`{findlux}
-	if(~ $#luxbin 0){
-		echo '# acme-ai: lux not found' >[1=2]
-		echo '# acme-ai: lux not found'
-		exit nolux
-	}
-	echo -n $action > $lib/request.action
-	cd $lib
-	$luxbin dispatch.lux
-	status=$status
-	if(~ $status error){
-		echo '# acme-ai: lux failed ('^$status^')' >[1=2]
-		exit luxfail
-	}
-	if(~ $status compile){
-		echo '# acme-ai: lux compile error' >[1=2]
-		exit luxfail
-	}
-	if(~ $status runtime){
-		echo '# acme-ai: lux runtime error' >[1=2]
-		exit luxfail
-	}
-}
-
-fn readsel {
-	lib=$1
-	cat > $lib/request.sel
-	if(~ `{wc -c $lib/request.sel} 0){
-		echo acme-ai: no selection >[1=2]
-		echo '# acme-ai: no selection'
-		exit nsel
-	}
-}
-
-fn readaddr {
-	lib=$1
-	addr='(unknown)'
-	if(! ~ $#winid 0){
-		if(test -e /mnt/acme/$winid/addr)
-			addr=`{cat /mnt/acme/$winid/addr}
-		if(test -e /mnt/acme/acme/$winid/addr)
-			addr=`{cat /mnt/acme/acme/$winid/addr}
-	}
-	echo -n $addr > $lib/request.addr
 }

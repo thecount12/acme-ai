@@ -2,27 +2,34 @@
 # aichat-send - send selection/body text to chat (stdin/stdout, same as t+)
 
 lib=$home/lib/acme-ai
-sel=`{cat}
-if(~ $#sel 0){
-	echo acme-ai: no selection >[1=2]
-	exit nsel
-}
 
 if(! test -d $lib){
 	echo acme-ai: missing $lib - run install.rc >[1=2]
 	exit nolib
 }
 
-echo -n $sel > $lib/chat.message
+cat > $lib/chat.message
+if(! test -s $lib/chat.message){
+	echo acme-ai: no selection >[1=2]
+	echo '# acme-ai: no selection'
+	exit nsel
+}
 
-if(~ $objtype '')
+luxbin=
+if(~ $#objtype 0)
 	objtype=`{echo $cputype}
-luxbin=$home/bin/$objtype/lux
-if(! test -x $luxbin)
-	luxbin=$home/bin/lux
-if(! test -x $luxbin)
+if(test -x $home/bin/$objtype/lux)
+	luxbin=$home/bin/$objtype/lux
+if(~ $#luxbin 0)
+	if(test -x $home/bin/lux)
+		luxbin=$home/bin/lux
+if(~ $#luxbin 0)
 	luxbin=8.out
 
 cd $lib
-resp=`{$luxbin chat.lux}
-echo -n $resp
+$luxbin chat.lux
+status=$status
+if(~ $status error){
+	echo '# acme-ai: lux failed ('^$status^')' >[1=2]
+	exit luxfail
+}

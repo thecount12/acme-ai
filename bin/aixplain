@@ -2,7 +2,6 @@
 # aixplain - explain selection via Ollama (stdin/stdout, same as t+)
 
 lib=$home/lib/acme-ai
-. $lib/common.rc
 
 if(! test -d $lib){
 	echo acme-ai: missing $lib - run install.rc >[1=2]
@@ -10,6 +9,52 @@ if(! test -d $lib){
 	exit nolib
 }
 
-readsel $lib
-readaddr $lib
-runlux explain
+cat > $lib/request.sel
+if(! test -s $lib/request.sel){
+	echo acme-ai: no selection >[1=2]
+	echo '# acme-ai: no selection'
+	exit nsel
+}
+
+addr='(unknown)'
+if(~ $#winid 1){
+	if(test -e /mnt/acme/$winid/addr)
+		addr=`{cat /mnt/acme/$winid/addr}
+	if(test -e /mnt/acme/acme/$winid/addr)
+		addr=`{cat /mnt/acme/acme/$winid/addr}
+}
+echo -n $addr > $lib/request.addr
+echo -n explain > $lib/request.action
+
+luxbin=
+if(~ $#objtype 0)
+	objtype=`{echo $cputype}
+if(test -x $home/bin/$objtype/lux)
+	luxbin=$home/bin/$objtype/lux
+if(~ $#luxbin 0)
+	if(test -x $home/bin/lux)
+		luxbin=$home/bin/lux
+if(~ $#luxbin 0)
+	if(test -x /bin/lux)
+		luxbin=/bin/lux
+if(~ $#luxbin 0){
+	echo '# acme-ai: lux not found' >[1=2]
+	echo '# acme-ai: lux not found'
+	exit nolux
+}
+
+cd $lib
+$luxbin dispatch.lux
+status=$status
+if(~ $status error){
+	echo '# acme-ai: lux failed ('^$status^')' >[1=2]
+	exit luxfail
+}
+if(~ $status compile){
+	echo '# acme-ai: lux compile error' >[1=2]
+	exit luxfail
+}
+if(~ $status runtime){
+	echo '# acme-ai: lux runtime error' >[1=2]
+	exit luxfail
+}
