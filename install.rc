@@ -1,25 +1,21 @@
 #!/bin/rc
-# Install acme-ai into $home/lib/acme-ai, $home/bin, and /acme/bin/$objtype
+# Install acme-ai - lib in $home, commands in /acme/bin like t+ and t-
 
-if (~ $#* 0) {
+if(~ $#* 0){
 	src=.
 }
 if not {
 	src=$1
 }
 
-if (! test -d $src/lib) {
+if not test -d $src/lib {
 	echo install.rc: missing $src/lib >[1=2]
 	exit nolib
 }
 
-if (~ $objtype '') {
-	objtype=`{echo $cputype}
-}
-
 mkdir -p $home/lib/acme-ai
 mkdir -p $home/bin
-mkdir -p /acme/bin/$objtype
+mkdir -p /acme/bin
 
 cp $src/lib/*.lux $home/lib/acme-ai/
 cp $src/lib/config.json $home/lib/acme-ai/
@@ -31,17 +27,17 @@ cp $src/bin/aichat $home/bin/aichat
 cp $src/bin/aichat-send $home/bin/aichat-send
 chmod +x $home/bin/acme-ai $home/bin/aixplain $home/bin/aianalyze $home/bin/aifix $home/bin/aichat $home/bin/aichat-send
 
-cp $home/bin/aixplain /acme/bin/$objtype/aixplain
-cp $home/bin/aianalyze /acme/bin/$objtype/aianalyze
-cp $home/bin/aifix /acme/bin/$objtype/aifix
-cp $home/bin/aichat /acme/bin/$objtype/aichat
-cp $home/bin/aichat-send /acme/bin/$objtype/aichat-send
-chmod +x /acme/bin/$objtype/aixplain /acme/bin/$objtype/aianalyze /acme/bin/$objtype/aifix /acme/bin/$objtype/aichat /acme/bin/$objtype/aichat-send
+cp $home/bin/aixplain /acme/bin/aixplain
+cp $home/bin/aianalyze /acme/bin/aianalyze
+cp $home/bin/aifix /acme/bin/aifix
+cp $home/bin/aichat /acme/bin/aichat
+cp $home/bin/aichat-send /acme/bin/aichat-send
+chmod +x /acme/bin/aixplain /acme/bin/aianalyze /acme/bin/aifix /acme/bin/aichat /acme/bin/aichat-send
 
-echo installed lib to $home/lib/acme-ai
-echo installed bin to $home/bin/acme-ai and /acme/bin/$objtype/aixplain ...
-echo edit $home/lib/acme-ai/config.json for host and models
+echo installed $home/lib/acme-ai
+echo installed /acme/bin/aixplain aianalyze aifix aichat aichat-send
+echo edit $home/lib/acme-ai/config.json
 echo
-echo acme tag column 1 - middle-click INSIDE the quotes:
-echo '  | Look | '''aixplain''' | '''aianalyze''' | '''aifix''''
-echo select code in body first, then click inside '''aixplain''' etc.
+echo acme tag column 1, same as t+:
+echo '  Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix'
+echo select code in body, highlight |aixplain in tag, middle-click

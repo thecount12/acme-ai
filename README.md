@@ -70,38 +70,27 @@ Verify from 9front:
 hget http://macmini:11434/api/tags
 ```
 
-## acme tag setup
+## acme tag setup (same pattern as t+ / t-)
 
-acme runs the text **between single quotes** in column 1. Keep it simple: **one word, no spaces, no `=`, no `$winid`, no `{` braces**.
-
-After `rc install.rc`, add to tag column 1 (middle-click **inside** the quotes, not on the word outside):
+Put commands in `/acme/bin/` (like your `t+` and `t-` scripts). After `rc install.rc`:
 
 ```
-| Look | 'aixplain' | 'aianalyze' | 'aifix'
+Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix
 ```
 
-These are tiny wrappers installed to `/acme/bin/$objtype/` (acme always has that on `$path`).
+**How to use (your t+ workflow):**
 
-**Usage:**
+1. Select the code in the **body** you want explained
+2. Also highlight **`|aixplain`** in the tag (column 1) — same as you do for `|t+`
+3. Middle-click to run
 
-1. Select code in the **body**
-2. Clear any selection in the tag (button-1 click in tag)
-3. Middle-click **inside** `'aixplain'` (between the single quotes)
-4. Response is inserted at the cursor
+acme-ai reads the body selection from acme's `rdsel` file (via `$winid`). It does not read stdin like `t+` does — but the select-body + highlight-tag-command pattern is the same.
 
-Do **not** highlight the tag text before middle-clicking — that runs the selection as a command instead.
-
-Do **not** use `{...}`, paths, or `$winid` in the tag — acme passes the quoted text to rc and complex strings cause `token '=' syntax error` or `/bin/{...}` errors.
+Do **not** middle-click only the C/code selection in the body — that tries to run your C code as rc and gives errors like `token '( [SUB]' syntax error`.
 
 ### Chat window
 
-Middle-click **Chat** (`'aichat'`) on a source window. In the new chat window tag, add:
-
-```
-'aichat-send'
-```
-
-Middle-click **inside** `'aichat-send'` with your message selected (or typed in the body).
+Middle-click **`|aichat`** (with optional code selected) to open a chat window. In the chat window tag add **`|aichat-send`** and use the same highlight + middle-click pattern to send a message.
 
 ## Request files
 
