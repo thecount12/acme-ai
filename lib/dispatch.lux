@@ -1,5 +1,7 @@
 // Self-contained dispatch (no imports, no classes). Run from $home/lib/acme-ai.
 
+var plan9Hint = "Context: this code is from 9front or Plan 9. Plan 9 C uses print(), exits(), and different conventions than ISO C. Do not suggest printf, return from main, or POSIX-only APIs unless the code clearly targets POSIX. Use literal < and > in code examples.\n\n";
+
 var configRaw = readFile("config.json");
 if (configRaw == nil) {
     print "# acme-ai: could not read config.json";
@@ -53,15 +55,40 @@ if (model == nil) {
     exit();
 }
 
+var numPredict = 600;
+var limits = config.num_predict;
+if (limits != nil) {
+    if (action == "analyze") {
+        if (limits.analyze != nil) {
+            numPredict = limits.analyze;
+        }
+    }
+    if (action == "explain") {
+        if (limits.explain != nil) {
+            numPredict = limits.explain;
+        }
+    }
+    if (action == "fix") {
+        if (limits.fix != nil) {
+            numPredict = limits.fix;
+        }
+    }
+    if (action == "chat") {
+        if (limits.chat != nil) {
+            numPredict = limits.chat;
+        }
+    }
+}
+
 var prompt = nil;
 if (action == "analyze") {
-    prompt = "Analyze the following code from " + addr + ".\nExplain what it does, note bugs, and suggest improvements.\n\n" + selection;
+    prompt = plan9Hint + "Analyze the following code from " + addr + ".\nExplain what it does, note bugs, and suggest improvements. Be concise.\n\n" + selection;
 }
 if (action == "explain") {
-    prompt = "Briefly explain the following code from " + addr + ".\n\n" + selection;
+    prompt = plan9Hint + "Briefly explain the following code from " + addr + ".\n\n" + selection;
 }
 if (action == "fix") {
-    prompt = "Review the following code from " + addr + ".\nSuggest a minimal fix as a unified diff.\n\n" + selection;
+    prompt = plan9Hint + "Review the following code from " + addr + ".\nSuggest a minimal fix as a unified diff.\n\n" + selection;
 }
 
 if (prompt == nil) {
@@ -71,7 +98,8 @@ if (prompt == nil) {
 
 var host = config.host;
 var url = "http://" + host + ":11434/api/generate";
-var body = "{\"model\":" + toJSON(model) + ",\"prompt\":" + toJSON(prompt) + ",\"stream\":false}";
+var np = toJSON(numPredict);
+var body = "{\"model\":" + toJSON(model) + ",\"prompt\":" + toJSON(prompt) + ",\"stream\":false,\"options\":{\"num_predict\":" + np + "}}";
 
 var resp = httpPost(url, body);
 if (resp == nil) {

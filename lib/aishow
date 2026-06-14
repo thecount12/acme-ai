@@ -1,14 +1,17 @@
 #!/bin/rc
-# aishow action addr — open +AI window (aspell-style via /mnt/wsys)
+# aishow action — open +AI window (aspell-style via /mnt/wsys)
 
 action=$1
-addr=$2
 lib=$home/lib/acme-ai
+addr='(unknown)'
 
 if(~ $#action 0){
 	echo aishow: missing action >[1=2]
 	exit usage
 }
+
+if(test -s $lib/request.addr)
+	addr=`{cat $lib/request.addr}
 
 winname=+AI
 if(test -f $addr)

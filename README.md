@@ -160,10 +160,25 @@ Use `$home/bin/$objtype/lux` (e.g. `/usr/william/bin/386/lux`), not `/home/willi
 
 After `git/pull`, run `rc install.rc` from the repo to refresh `$home/lib/acme-ai/dispatch.lux`.
 
-## POSIX vs Plan 9 timeouts
+## Timeouts and response length
 
-- **Plan 9 Lux**: HTTP reads until connection close — fine for 32B models
-- **POSIX Lux**: libcurl 30s timeout — use smaller models for Mac-side dev, or increase timeout in Lux upstream
+- **Plan 9 Lux**: no HTTP timeout — fine for large models (your 2-minute `aianalyze` run is normal)
+- **POSIX Lux** (Mac dev): libcurl 30s timeout — use smaller models or test against `127.0.0.1` with short prompts
+
+Tune max output tokens in `config.json` under `num_predict` (passed to Ollama as `options.num_predict`):
+
+```json
+"num_predict": {
+  "analyze": 800,
+  "explain": 400,
+  "fix": 800,
+  "chat": 600
+}
+```
+
+Lower `analyze` (e.g. 400) for faster, shorter replies. The prompts include Plan 9 context so models know `print`/`exits` are valid.
+
+The `analyze: 0` header is acme's address for an unsaved buffer — not a bug.
 
 ## Layout
 

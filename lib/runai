@@ -49,7 +49,7 @@ cd $lib
 $luxbin dispatch.lux > response.txt
 
 if(test -e /mnt/acme/$winid/rdsel || test -e /mnt/acme/acme/$winid/rdsel){
-	$lib/aishow $action $addr >[1=2]
+	$lib/aishow $action >[1=2]
 	cat request.sel
 }
 if not {

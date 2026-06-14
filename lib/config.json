@@ -1,6 +1,12 @@
 {
   "host": "macmini",
   "port": 11434,
+  "num_predict": {
+    "analyze": 800,
+    "explain": 400,
+    "fix": 800,
+    "chat": 600
+  },
   "models": {
     "analyze": "deepseek-r1:32b",
     "explain": "qwen2.5-coder:14b",
