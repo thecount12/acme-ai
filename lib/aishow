@@ -3,22 +3,7 @@
 
 action=$1
 lib=$home/lib/acme-ai
-addr=
-
-switch($#*){
-case 0
-	echo aishow: missing action >[1=2]
-	exit usage
-}
-
-if(test -s $lib/request.addr)
-	addr=`{cat $lib/request.addr}
-
 winname=+AI
-switch($addr){
-case */*
-	winname=`{basename -d $addr}^/+AI
-}
 
 dir=/mnt/wsys
 if(! test -f $dir/cons)

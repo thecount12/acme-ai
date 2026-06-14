@@ -1,14 +1,8 @@
 #!/bin/rc
 # runai action — Ollama via Lux; +AI window in acme, stdout in pipe mode
 
-lib=$home/lib/acme-ai
-
-switch($#*){
-case 0
-	echo usage: runai action >[1=2]
-	exit usage
-}
 action=$1
+lib=$home/lib/acme-ai
 
 if(! test -d $lib){
 	echo acme-ai: missing $lib - run install.rc >[1=2]
