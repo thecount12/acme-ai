@@ -1,6 +1,6 @@
 host=macmini
 port=11434
-model_explain=qwen2.5:14b
+model_explain=qwen2.5-coder:14b
 model_analyze=deepseek-r1:32b
 model_fix=qwen2.5-coder:32b
 model_chat=qwen2.5-coder:32b

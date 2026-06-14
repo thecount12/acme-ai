@@ -1,125 +1,94 @@
-// Self-contained dispatch (no imports). Run from $home/lib/acme-ai.
+// Self-contained dispatch (no imports, no classes). Run from $home/lib/acme-ai.
 
-fun readText(path) {
-    return readFile(path);
+var configRaw = readFile("config.json");
+if (configRaw == nil) {
+    print "# acme-ai: could not read config.json";
+    exit();
 }
 
-fun loadConfig() {
-    var raw = readFile("config.json");
-    if (raw == nil) {
-        return nil;
-    }
-    return parseJSON(raw);
+var config = parseJSON(configRaw);
+if (config == nil) {
+    print "# acme-ai: bad config.json";
+    exit();
 }
 
-fun loadRequest() {
-    var action = readText("request.action");
-    var addr = readText("request.addr");
-    var selection = readText("request.sel");
-    if (action == nil | selection == nil) {
-        return nil;
-    }
-    if (addr == nil) {
-        addr = "(unknown)";
-    }
-    class Request {
-        init(action, addr, selection) {
-            this.action = action;
-            this.addr = addr;
-            this.selection = selection;
-        }
-    }
-    return Request(action, addr, selection);
+var action = readFile("request.action");
+var addr = readFile("request.addr");
+var selection = readFile("request.sel");
+
+if (action == nil) {
+    print "# acme-ai: missing request.action";
+    exit();
+}
+if (selection == nil) {
+    print "# acme-ai: missing request.sel";
+    exit();
+}
+if (addr == nil) {
+    addr = "(unknown)";
 }
 
-fun modelForAction(config, action) {
-    if (config == nil | config.models == nil) {
-        return nil;
-    }
-    if (action == "analyze") {
-        return config.models.analyze;
-    }
-    if (action == "explain") {
-        return config.models.explain;
-    }
-    if (action == "fix") {
-        return config.models.fix;
-    }
-    if (action == "chat") {
-        return config.models.chat;
-    }
-    return nil;
+var models = config.models;
+if (models == nil) {
+    print "# acme-ai: config missing models";
+    exit();
 }
 
-fun buildPrompt(action, selection, fileAddr) {
-    if (action == "analyze") {
-        return "Analyze the following code from " + fileAddr + ".\nExplain what it does, note bugs, and suggest improvements.\n\n" + selection;
-    }
-    if (action == "explain") {
-        return "Briefly explain the following code from " + fileAddr + ".\n\n" + selection;
-    }
-    if (action == "fix") {
-        return "Review the following code from " + fileAddr + ".\nSuggest a minimal fix as a unified diff.\n\n" + selection;
-    }
-    return nil;
+var model = nil;
+if (action == "analyze") {
+    model = models.analyze;
+}
+if (action == "explain") {
+    model = models.explain;
+}
+if (action == "fix") {
+    model = models.fix;
+}
+if (action == "chat") {
+    model = models.chat;
 }
 
-fun ollamaGenerate(host, port, model, prompt) {
-    var portStr = toJSON(port);
-    var url = "http://" + host + ":" + portStr + "/api/generate";
-    var body = "{\"model\":" + toJSON(model) + ",\"prompt\":" + toJSON(prompt) + ",\"stream\":false}";
-    var resp = httpPost(url, body);
-    if (resp == nil) {
-        return nil;
-    }
-    var parsed = parseJSON(resp);
-    if (parsed == nil) {
-        return nil;
-    }
-    var ans = parsed.response;
-    if (ans == nil) {
-        return nil;
-    }
-    return ans;
+if (model == nil) {
+    print "# acme-ai: unknown action or missing model: " + action;
+    exit();
 }
 
-fun dispatch() {
-    var config = loadConfig();
-    if (config == nil) {
-        print "# acme-ai: could not read config.json";
-        return;
-    }
-
-    var req = loadRequest();
-    if (req == nil) {
-        print "# acme-ai: could not read request files";
-        return;
-    }
-
-    var model = modelForAction(config, req.action);
-    if (model == nil) {
-        print "# acme-ai: unknown action or missing model: " + req.action;
-        return;
-    }
-
-    var prompt = buildPrompt(req.action, req.selection, req.addr);
-    if (prompt == nil) {
-        print "# acme-ai: unknown action: " + req.action;
-        return;
-    }
-
-    var port = config.port;
-    if (port == nil) {
-        port = 11434;
-    }
-
-    var answer = ollamaGenerate(config.host, port, model, prompt);
-    if (answer == nil | len(answer) == 0) {
-        print "# acme-ai: Ollama request failed";
-        return;
-    }
-
-    print answer;
+var prompt = nil;
+if (action == "analyze") {
+    prompt = "Analyze the following code from " + addr + ".\nExplain what it does, note bugs, and suggest improvements.\n\n" + selection;
+}
+if (action == "explain") {
+    prompt = "Briefly explain the following code from " + addr + ".\n\n" + selection;
+}
+if (action == "fix") {
+    prompt = "Review the following code from " + addr + ".\nSuggest a minimal fix as a unified diff.\n\n" + selection;
 }
 
-dispatch();
+if (prompt == nil) {
+    print "# acme-ai: unknown action: " + action;
+    exit();
+}
+
+var host = config.host;
+var url = "http://" + host + ":11434/api/generate";
+var body = "{\"model\":" + toJSON(model) + ",\"prompt\":" + toJSON(prompt) + ",\"stream\":false}";
+
+var resp = httpPost(url, body);
+if (resp == nil) {
+    print "# acme-ai: Ollama request failed";
+    exit();
+}
+
+var parsed = parseJSON(resp);
+if (parsed == nil) {
+    print "# acme-ai: bad Ollama response";
+    exit();
+}
+
+var answer = parsed.response;
+if (answer == nil) {
+    print "# acme-ai: empty Ollama response";
+    exit();
+}
+
+print answer;

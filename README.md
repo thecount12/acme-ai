@@ -39,7 +39,7 @@ Edit `$home/lib/acme-ai/config.json`:
   "port": 11434,
   "models": {
     "analyze": "deepseek-r1:32b",
-    "explain": "qwen2.5:14b",
+    "explain": "qwen2.5-coder:14b",
     "fix": "qwen2.5-coder:32b",
     "chat": "qwen2.5-coder:32b"
   }
@@ -60,7 +60,7 @@ Pull models you reference in `config.json`:
 
 ```bash
 ollama pull deepseek-r1:32b
-ollama pull qwen2.5:14b
+ollama pull qwen2.5-coder:14b
 ollama pull qwen2.5-coder:32b
 ```
 
@@ -124,6 +124,22 @@ echo -n /tmp/foo.go > request.addr
 echo -n 'func main() {}' > request.sel
 /path/to/lux dispatch.lux
 ```
+
+## Troubleshooting (Plan 9)
+
+If `lux dispatch.lux` segfaults, isolate the failure:
+
+```rc
+cd $home/lib/acme-ai
+lux -c 'print httpGet("http://macmini:11434/api/tags");'
+lux -c 'var c=parseJSON(readFile("config.json")); print c.host;'
+lux -c 'print httpPost("http://macmini:11434/api/generate", "{\"model\":\"qwen2.5-coder:14b\",\"prompt\":\"hi\",\"stream\":false}");'
+lux dispatch.lux
+```
+
+Use `$home/bin/$objtype/lux` (e.g. `/usr/william/bin/386/lux`), not `/home/william/...` — Plan 9 `$home` is `/usr/william`.
+
+After `git/pull`, run `rc install.rc` from the repo to refresh `$home/lib/acme-ai/dispatch.lux`.
 
 ## POSIX vs Plan 9 timeouts
 
