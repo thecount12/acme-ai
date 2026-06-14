@@ -75,18 +75,31 @@ hget http://macmini:11434/api/tags
 Put commands in `/acme/bin/` (like your `t+` and `t-` scripts). After `rc install.rc`:
 
 ```
-Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix
+Del Snarf | Look | t+ | t- | aixplain | aiexplain | aianalyze | aifix
 ```
 
 **How to use (same as t+):**
 
 1. Select the code in the **body**
-2. Highlight **`|aixplain`** in the tag (column 1) — same as **`|t+`**
+2. Highlight **`|aixplain`** or **`|aiexplain`** in the tag (column 1) — same as **`|t+`**
 3. Middle-click
 
 The script reads your selection from **stdin** and prints the answer to **stdout**. acme replaces the selection with the output — exactly like `t+` runs `sed`. No `$winid`, no `{` braces, no quotes in the tag.
 
-**Do not** middle-click only the code in the body — that runs C/rc code as a command. Always highlight the **tag command** (`|aixplain`) while the body text is selected.
+**Do not** middle-click only the code in the body — that runs C/rc code as a command. Always highlight the **tag command** (`|aixplain` or `|aiexplain`) while the body text is selected.
+
+**Do not** use `{...}` braces or `$winid` in the tag line — acme will try to run `/bin/{` and fail. The scripts read selection from stdin automatically (same as `t+`).
+
+### Selection replaced with nothing
+
+If your code disappears, the tag command returned empty stdout (usually wrong command name or script not in `/acme/bin/`). Check:
+
+```rc
+ls -l /acme/bin/aixplain /acme/bin/aiexplain
+echo 'print("hello");' | /acme/bin/aixplain
+```
+
+Re-run `rc install.rc` after pulling updates.
 
 ### Chat window
 

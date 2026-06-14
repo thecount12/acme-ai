@@ -1,0 +1,4 @@
+#!/bin/rc
+# aiexplain - alias for aixplain (common typo)
+
+exec /acme/bin/aixplain

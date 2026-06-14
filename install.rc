@@ -23,23 +23,25 @@ cp $src/lib/config.rc $home/lib/acme-ai/
 cp $src/lib/common.rc $home/lib/acme-ai/
 cp $src/bin/acme-ai $home/bin/acme-ai
 cp $src/bin/aixplain $home/bin/aixplain
+cp $src/bin/aiexplain $home/bin/aiexplain
 cp $src/bin/aianalyze $home/bin/aianalyze
 cp $src/bin/aifix $home/bin/aifix
 cp $src/bin/aichat $home/bin/aichat
 cp $src/bin/aichat-send $home/bin/aichat-send
-chmod +x $home/bin/acme-ai $home/bin/aixplain $home/bin/aianalyze $home/bin/aifix $home/bin/aichat $home/bin/aichat-send
+chmod +x $home/bin/acme-ai $home/bin/aixplain $home/bin/aiexplain $home/bin/aianalyze $home/bin/aifix $home/bin/aichat $home/bin/aichat-send
 
 cp $home/bin/aixplain /acme/bin/aixplain
+cp $home/bin/aiexplain /acme/bin/aiexplain
 cp $home/bin/aianalyze /acme/bin/aianalyze
 cp $home/bin/aifix /acme/bin/aifix
 cp $home/bin/aichat /acme/bin/aichat
 cp $home/bin/aichat-send /acme/bin/aichat-send
-chmod +x /acme/bin/aixplain /acme/bin/aianalyze /acme/bin/aifix /acme/bin/aichat /acme/bin/aichat-send
+chmod +x /acme/bin/aixplain /acme/bin/aiexplain /acme/bin/aianalyze /acme/bin/aifix /acme/bin/aichat /acme/bin/aichat-send
 
 echo installed $home/lib/acme-ai
-echo installed /acme/bin/aixplain aianalyze aifix aichat aichat-send
+echo installed /acme/bin/aixplain aiexplain aianalyze aifix aichat aichat-send
 echo edit $home/lib/acme-ai/config.json
 echo
 echo acme tag column 1, same as t+:
-echo '  Del Snarf | Look | t+ | t- | aixplain | aianalyze | aifix'
+echo '  Del Snarf | Look | t+ | t- | aixplain | aiexplain | aianalyze | aifix'
 echo 'select code in body, highlight aixplain in tag, middle-click'

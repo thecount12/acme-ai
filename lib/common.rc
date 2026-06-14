@@ -17,14 +17,17 @@ fn findlux {
 }
 
 fn runlux {
+	action=$1
 	lib=$home/lib/acme-ai
 	luxbin=`{findlux}
 	if(~ $#luxbin 0){
 		echo '# acme-ai: lux not found' >[1=2]
+		echo '# acme-ai: lux not found'
 		exit nolux
 	}
+	echo -n $action > $lib/request.action
 	cd $lib
-	resp=`{$luxbin dispatch.lux}
+	$luxbin dispatch.lux
 	status=$status
 	if(~ $status error){
 		echo '# acme-ai: lux failed ('^$status^')' >[1=2]
@@ -38,5 +41,26 @@ fn runlux {
 		echo '# acme-ai: lux runtime error' >[1=2]
 		exit luxfail
 	}
-	echo -n $resp
+}
+
+fn readsel {
+	lib=$1
+	cat > $lib/request.sel
+	if(~ `{wc -c $lib/request.sel} 0){
+		echo acme-ai: no selection >[1=2]
+		echo '# acme-ai: no selection'
+		exit nsel
+	}
+}
+
+fn readaddr {
+	lib=$1
+	addr='(unknown)'
+	if(! ~ $#winid 0){
+		if(test -e /mnt/acme/$winid/addr)
+			addr=`{cat /mnt/acme/$winid/addr}
+		if(test -e /mnt/acme/acme/$winid/addr)
+			addr=`{cat /mnt/acme/acme/$winid/addr}
+	}
+	echo -n $addr > $lib/request.addr
 }

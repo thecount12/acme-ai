@@ -1,29 +1,15 @@
 #!/bin/rc
 # aianalyze - analyze selection via Ollama (stdin/stdout, same as t+)
 
-. $home/lib/acme-ai/common.rc
+lib=$home/lib/acme-ai
+. $lib/common.rc
 
-sel=`{cat}
-if(~ $#sel 0){
-	echo acme-ai: no selection >[1=2]
-	exit nsel
-}
-
-addr='(unknown)'
-if(! ~ $#winid 0){
-	if(test -e /mnt/acme/$winid/addr)
-		addr=`{cat /mnt/acme/$winid/addr}
-	if(test -e /mnt/acme/acme/$winid/addr)
-		addr=`{cat /mnt/acme/acme/$winid/addr}
-}
-
-if(! test -d $home/lib/acme-ai){
-	echo acme-ai: missing $home/lib/acme-ai - run install.rc >[1=2]
+if(! test -d $lib){
+	echo acme-ai: missing $lib - run install.rc >[1=2]
+	echo '# acme-ai: missing '$lib
 	exit nolib
 }
 
-echo -n analyze > $home/lib/acme-ai/request.action
-echo -n $addr > $home/lib/acme-ai/request.addr
-echo -n $sel > $home/lib/acme-ai/request.sel
-
-runlux
+readsel $lib
+readaddr $lib
+runlux analyze
