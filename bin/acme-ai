@@ -1,11 +1,41 @@
 #!/bin/rc
 # acme-ai — Lux + Ollama integration for 9front acme
-# Usage: acme-ai action winid
+# Usage: acme-ai action
+# winid comes from the acme environment ($winid), not from the tag line.
 
 lib=$home/lib/acme-ai
+acmeroot=/mnt/acme
+winid=
+
+fn initacme {
+	# Prefer acme's exported winid; optional numeric override as $1.
+	if (~ $#* 1 && ! ~ $1 '$winid' && ! ~ $1 '') {
+		winid=$1
+	}
+	if not {
+		winid=$"winid"
+	}
+	if (~ $#winid 0) {
+		echo acme-ai: winid not set — run from acme >[1=2]
+		exit nowinid
+	}
+	if (test -e /mnt/acme/$winid/rdsel) {
+		acmeroot=/mnt/acme
+		return
+	}
+	if (test -e /mnt/acme/acme/$winid/rdsel) {
+		acmeroot=/mnt/acme/acme
+		return
+	}
+	echo acme-ai: bad winid $winid >[1=2]
+	exit badwin
+}
+
+fn acmefile {
+	echo $acmeroot/$winid/$1
+}
 
 fn findlux {
-	# Prefer installed lux binary, then plan9 mk output name.
 	if (~ $objtype '') {
 		objtype=`{echo $cputype}
 	}
@@ -30,21 +60,18 @@ fn findlux {
 
 fn writerequest {
 	action=$1
-	winid=$2
+	rds=`{acmefile rdsel}
+	addrf=`{acmefile addr}
 	if (! test -d $lib) {
 		echo acme-ai: missing $lib — run install.rc >[1=2]
 		exit nolib
 	}
-	if (! test -e /mnt/acme/$winid/rdsel) {
-		echo acme-ai: bad winid $winid >[1=2]
-		exit badwin
-	}
-	sel=`{cat /mnt/acme/$winid/rdsel}
+	sel=`{cat $rds}
 	if (~ $#sel 0) {
 		echo acme-ai: no selection >[1=2]
 		exit nsel
 	}
-	addr=`{cat /mnt/acme/$winid/addr}
+	addr=`{cat $addrf}
 	if (~ $#addr 0) {
 		addr='(unknown)'
 	}
@@ -80,31 +107,33 @@ fn runlux {
 }
 
 fn insertresult {
-	winid=$1
-	text=$2
-	echo -n 'insert ' > /mnt/acme/$winid/ctl
-	echo -n $text > /mnt/acme/$winid/wrsel
+	text=$1
+	ctlf=`{acmefile ctl}
+	wrself=`{acmefile wrsel}
+	echo -n 'insert ' > $ctlf
+	echo -n $text > $wrself
 }
 
 fn acme-ai {
-	action=$1
-	winid=$2
-	if (! ~ $#* 2) {
-		echo usage: acme-ai action winid >[1=2]
+	if (~ $#* 0) {
+		echo usage: acme-ai action >[1=2]
 		echo actions: analyze explain fix chat chat-send >[1=2]
 		exit usage
 	}
+	action=$1
+	initacme $2
 
 	switch ($action) {
 	case analyze explain fix
-		writerequest $action $winid
+		writerequest $action
 		resp=`{runlux dispatch.lux}
-		insertresult $winid $resp
+		insertresult $resp
 
 	case chat
-		# Open a chat window; seed context from current selection if any.
-		sel=`{cat /mnt/acme/$winid/rdsel}
-		addr=`{cat /mnt/acme/$winid/addr}
+		rds=`{acmefile rdsel}
+		addrf=`{acmefile addr}
+		sel=`{cat $rds}
+		addr=`{cat $addrf}
 		if (~ $#addr 0) {
 			addr='(unknown)'
 		}
@@ -119,14 +148,15 @@ fn acme-ai {
 		win acme-ai chat-ui $winid
 
 	case chat-send
-		# Send selection (or body) from the chat window as the next message.
 		if (! test -d $lib) {
 			echo acme-ai: missing $lib >[1=2]
 			exit nolib
 		}
-		sel=`{cat /mnt/acme/$winid/rdsel}
+		rds=`{acmefile rdsel}
+		bodyf=`{acmefile body}
+		sel=`{cat $rds}
 		if (~ $#sel 0) {
-			sel=`{cat /mnt/acme/$winid/body}
+			sel=`{cat $bodyf}
 		}
 		if (~ $#sel 0) {
 			echo acme-ai: nothing to send >[1=2]
@@ -134,16 +164,14 @@ fn acme-ai {
 		}
 		echo -n $sel > $lib/chat.message
 		resp=`{runlux chat.lux}
-		insertresult $winid $resp
+		insertresult $resp
 
 	case chat-ui
-		# Runs inside win(1): set tag and initial instructions.
 		srcwin=$1
-		echo 'Select or type a message, then middle-click Send.'
+		echo 'Select or type a message, then middle-click inside braces:'
 		echo ''
 		echo 'Source window:' $srcwin
-		echo 'Add to tag column 1 (middle-click inside braces):'
-		echo '{'^$home^'/bin/acme-ai chat-send '$winid^'}'
+		echo '{'^$home^'/bin/acme-ai chat-send'^'}'
 
 	case *
 		echo acme-ai: unknown action $action >[1=2]

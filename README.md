@@ -72,24 +72,30 @@ hget http://macmini:11434/api/tags
 
 ## acme tag setup
 
-Add to your acme tag template or window column 1:
+Add to window tag template (or manual tag line in **column 1**). Middle-click **inside** the `{...}` braces (not on a label word). acme sets `$winid` in the environment automatically — do not put `$winid` in the tag:
 
 ```
-Analyze '{acme-ai analyze $winid}' Explain '{acme-ai explain $winid}' Fix '{acme-ai fix $winid}' Chat '{acme-ai chat $winid}'
+| '{/usr/william/bin/acme-ai explain}' | '{/usr/william/bin/acme-ai analyze}' | '{/usr/william/bin/acme-ai fix}'
+```
+
+Or after copying to `/acme/bin/$objtype/acme-ai`:
+
+```
+| '{acme-ai explain}' | '{acme-ai analyze}' | '{acme-ai fix}'
 ```
 
 **Usage:**
 
 1. Select code in the body
-2. Middle-click **Analyze**, **Explain**, or **Fix**
+2. Middle-click **inside** the `{...}` block for explain/analyze/fix in tag column 1
 3. Response is inserted at the cursor
 
 ### Chat window
 
-Middle-click **Chat** on a source window (optionally with code selected for context). A new acme window opens. Add this to the chat window tag:
+Middle-click **Chat** on a source window (optionally with code selected for context). A new acme window opens. Add this to the chat window tag (middle-click inside braces):
 
 ```
-Send '{acme-ai chat-send $winid}'
+'{/usr/william/bin/acme-ai chat-send}'
 ```
 
 Type or select your message, middle-click **Send**. Conversation history is stored in `$home/lib/acme-ai/chat-<source-winid>.json`.
