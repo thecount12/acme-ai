@@ -1,13 +1,14 @@
 #!/bin/rc
 # runai action — Ollama via Lux; +AI window in acme, stdout in pipe mode
 
-action=$1
 lib=$home/lib/acme-ai
 
-if(~ $#action 0){
+switch($#*){
+case 0
 	echo usage: runai action >[1=2]
 	exit usage
 }
+action=$1
 
 if(! test -d $lib){
 	echo acme-ai: missing $lib - run install.rc >[1=2]
@@ -22,16 +23,15 @@ if(! test -s $lib/request.sel){
 	exit nsel
 }
 
-addr='(unknown)'
+echo -n '(unknown)' > $lib/request.addr
 if(test -e /mnt/acme/$winid/rdsel){
 	if(test -e /mnt/acme/$winid/addr)
-		addr=`{cat /mnt/acme/$winid/addr}
+		cp /mnt/acme/$winid/addr $lib/request.addr
 }
 if(test -e /mnt/acme/acme/$winid/rdsel){
 	if(test -e /mnt/acme/acme/$winid/addr)
-		addr=`{cat /mnt/acme/acme/$winid/addr}
+		cp /mnt/acme/acme/$winid/addr $lib/request.addr
 }
-echo -n $addr > $lib/request.addr
 echo -n $action > $lib/request.action
 
 luxbin=$home/bin/$cputype/lux

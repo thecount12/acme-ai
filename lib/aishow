@@ -3,9 +3,10 @@
 
 action=$1
 lib=$home/lib/acme-ai
-addr='(unknown)'
+addr=
 
-if(~ $#action 0){
+switch($#*){
+case 0
 	echo aishow: missing action >[1=2]
 	exit usage
 }
@@ -14,8 +15,10 @@ if(test -s $lib/request.addr)
 	addr=`{cat $lib/request.addr}
 
 winname=+AI
-if(test -f $addr)
+switch($addr){
+case */*
 	winname=`{basename -d $addr}^/+AI
+}
 
 dir=/mnt/wsys
 if(! test -f $dir/cons)
@@ -24,7 +27,12 @@ id=`{cat $dir/new/ctl}
 id=$id(1)
 echo 'name '^$winname > $dir/$id/ctl
 {
-	echo $action':' $addr
+	echo -n $action': '
+	if(test -s $lib/request.addr)
+		cat $lib/request.addr
+	if(! test -s $lib/request.addr)
+		echo '(unknown)'
+	echo
 	echo
 	if(test -s $lib/response.txt)
 		cat $lib/response.txt
