@@ -9,14 +9,11 @@ acmeroot=/mnt/acme
 fn initacme {
 	# Do not assign winid= at top level; that clears acme's exported winid.
 	if (~ $#* 1) {
-		if (! ~ $1 '$winid') {
-			if (! ~ $1 '') {
+		if not (~ $1 '$winid') {
+			if not (~ $1 '') {
 				winid=$1
 			}
 		}
-	}
-	if (~ $#winid 0) {
-		winid=$winid
 	}
 	if (~ $#winid 0) {
 		echo acme-ai: winid not set - run from acme >[1=2]
