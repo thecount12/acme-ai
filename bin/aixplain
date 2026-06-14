@@ -1,7 +1,8 @@
 #!/bin/rc
 # aixplain - explain selection via Ollama (stdin/stdout, same as t+)
 
-lib=$home/lib/acme-ai
+. $home/lib/acme-ai/common.rc
+
 sel=`{cat}
 if(~ $#sel 0){
 	echo acme-ai: no selection >[1=2]
@@ -16,23 +17,13 @@ if(! ~ $#winid 0){
 		addr=`{cat /mnt/acme/acme/$winid/addr}
 }
 
-if(! test -d $lib){
-	echo acme-ai: missing $lib - run install.rc >[1=2]
+if(! test -d $home/lib/acme-ai){
+	echo acme-ai: missing $home/lib/acme-ai - run install.rc >[1=2]
 	exit nolib
 }
 
-echo -n explain > $lib/request.action
-echo -n $addr > $lib/request.addr
-echo -n $sel > $lib/request.sel
+echo -n explain > $home/lib/acme-ai/request.action
+echo -n $addr > $home/lib/acme-ai/request.addr
+echo -n $sel > $home/lib/acme-ai/request.sel
 
-if(~ $objtype '')
-	objtype=`{echo $cputype}
-luxbin=$home/bin/$objtype/lux
-if(! test -x $luxbin)
-	luxbin=$home/bin/lux
-if(! test -x $luxbin)
-	luxbin=8.out
-
-cd $lib
-resp=`{$luxbin dispatch.lux}
-echo -n $resp
+runlux

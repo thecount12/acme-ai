@@ -19,6 +19,8 @@ mkdir -p /acme/bin
 
 cp $src/lib/*.lux $home/lib/acme-ai/
 cp $src/lib/config.json $home/lib/acme-ai/
+cp $src/lib/config.rc $home/lib/acme-ai/
+cp $src/lib/common.rc $home/lib/acme-ai/
 cp $src/bin/acme-ai $home/bin/acme-ai
 cp $src/bin/aixplain $home/bin/aixplain
 cp $src/bin/aianalyze $home/bin/aianalyze

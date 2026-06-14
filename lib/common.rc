@@ -1,0 +1,42 @@
+#!/bin/rc
+# Shared helpers for /acme/bin/aixplain etc.
+
+fn findlux {
+	luxbin=
+	if(~ $objtype '')
+		objtype=`{echo $cputype}
+	if(test -x $home/bin/$objtype/lux)
+		luxbin=$home/bin/$objtype/lux
+	if(~ $#luxbin 0)
+		if(test -x $home/bin/lux)
+			luxbin=$home/bin/lux
+	if(~ $#luxbin 0)
+		if(test -x /bin/lux)
+			luxbin=/bin/lux
+	echo $luxbin
+}
+
+fn runlux {
+	lib=$home/lib/acme-ai
+	luxbin=`{findlux}
+	if(~ $#luxbin 0){
+		echo '# acme-ai: lux not found' >[1=2]
+		exit nolux
+	}
+	cd $lib
+	resp=`{$luxbin dispatch.lux}
+	status=$status
+	if(~ $status error){
+		echo '# acme-ai: lux failed ('^$status^')' >[1=2]
+		exit luxfail
+	}
+	if(~ $status compile){
+		echo '# acme-ai: lux compile error' >[1=2]
+		exit luxfail
+	}
+	if(~ $status runtime){
+		echo '# acme-ai: lux runtime error' >[1=2]
+		exit luxfail
+	}
+	echo -n $resp
+}

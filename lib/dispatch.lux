@@ -1,19 +1,7 @@
-// Reads request files from $home/lib/acme-ai (cwd) and calls Ollama.
-// rc writes request.action, request.addr, request.sel before invoking this script.
+// Self-contained dispatch (no imports). Run from $home/lib/acme-ai.
 
-import "ollama.lux";
-import "prompts.lux";
-
-fun readTrimmed(path) {
-    var text = readFile(path);
-    if (text == nil) {
-        return nil;
-    }
-    var n = len(text);
-    if (n > 0 & strSlice(text, n - 1, n) == "\n") {
-        return strSlice(text, 0, n - 1);
-    }
-    return text;
+fun readText(path) {
+    return readFile(path);
 }
 
 fun loadConfig() {
@@ -25,9 +13,9 @@ fun loadConfig() {
 }
 
 fun loadRequest() {
-    var action = readTrimmed("request.action");
-    var addr = readTrimmed("request.addr");
-    var selection = readFile("request.sel");
+    var action = readText("request.action");
+    var addr = readText("request.addr");
+    var selection = readText("request.sel");
     if (action == nil | selection == nil) {
         return nil;
     }
@@ -42,6 +30,57 @@ fun loadRequest() {
         }
     }
     return Request(action, addr, selection);
+}
+
+fun modelForAction(config, action) {
+    if (config == nil | config.models == nil) {
+        return nil;
+    }
+    if (action == "analyze") {
+        return config.models.analyze;
+    }
+    if (action == "explain") {
+        return config.models.explain;
+    }
+    if (action == "fix") {
+        return config.models.fix;
+    }
+    if (action == "chat") {
+        return config.models.chat;
+    }
+    return nil;
+}
+
+fun buildPrompt(action, selection, fileAddr) {
+    if (action == "analyze") {
+        return "Analyze the following code from " + fileAddr + ".\nExplain what it does, note bugs, and suggest improvements.\n\n" + selection;
+    }
+    if (action == "explain") {
+        return "Briefly explain the following code from " + fileAddr + ".\n\n" + selection;
+    }
+    if (action == "fix") {
+        return "Review the following code from " + fileAddr + ".\nSuggest a minimal fix as a unified diff.\n\n" + selection;
+    }
+    return nil;
+}
+
+fun ollamaGenerate(host, port, model, prompt) {
+    var portStr = toJSON(port);
+    var url = "http://" + host + ":" + portStr + "/api/generate";
+    var body = "{\"model\":" + toJSON(model) + ",\"prompt\":" + toJSON(prompt) + ",\"stream\":false}";
+    var resp = httpPost(url, body);
+    if (resp == nil) {
+        return nil;
+    }
+    var parsed = parseJSON(resp);
+    if (parsed == nil) {
+        return nil;
+    }
+    var ans = parsed.response;
+    if (ans == nil) {
+        return nil;
+    }
+    return ans;
 }
 
 fun dispatch() {
