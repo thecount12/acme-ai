@@ -15,21 +15,11 @@ if(! test -s $lib/chat.message){
 	exit nsel
 }
 
-luxbin=
-if(~ $#objtype 0)
-	objtype=`{echo $cputype}
-if(test -x $home/bin/$objtype/lux)
-	luxbin=$home/bin/$objtype/lux
-if(~ $#luxbin 0)
-	if(test -x $home/bin/lux)
-		luxbin=$home/bin/lux
-if(~ $#luxbin 0)
+luxbin=$home/bin/$cputype/lux
+if(! test -x $luxbin)
+	luxbin=$home/bin/lux
+if(! test -x $luxbin)
 	luxbin=8.out
 
 cd $lib
 $luxbin chat.lux
-status=$status
-if(~ $status error){
-	echo '# acme-ai: lux failed ('^$status^')' >[1=2]
-	exit luxfail
-}

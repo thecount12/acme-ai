@@ -1,18 +1,11 @@
 #!/bin/rc
-# Legacy shared helpers (unused by /acme/bin scripts; kept flat like t+).
-# Plan 9 rc does not accept if(~ $objtype '') — use if(~ $#objtype 0) instead.
+# Legacy helper — /acme/bin scripts are flat; use $cputype like aspell/Slide+.
 
 fn findlux {
-	luxbin=
-	if(~ $#objtype 0)
-		objtype=`{echo $cputype}
-	if(test -x $home/bin/$objtype/lux)
-		luxbin=$home/bin/$objtype/lux
-	if(~ $#luxbin 0)
-		if(test -x $home/bin/lux)
-			luxbin=$home/bin/lux
-	if(~ $#luxbin 0)
-		if(test -x /bin/lux)
-			luxbin=/bin/lux
+	luxbin=$home/bin/$cputype/lux
+	if(! test -x $luxbin)
+		luxbin=$home/bin/lux
+	if(! test -x $luxbin)
+		luxbin=/bin/lux
 	echo $luxbin
 }

@@ -26,18 +26,12 @@ if(~ $#winid 1){
 echo -n $addr > $lib/request.addr
 echo -n explain > $lib/request.action
 
-luxbin=
-if(~ $#objtype 0)
-	objtype=`{echo $cputype}
-if(test -x $home/bin/$objtype/lux)
-	luxbin=$home/bin/$objtype/lux
-if(~ $#luxbin 0)
-	if(test -x $home/bin/lux)
-		luxbin=$home/bin/lux
-if(~ $#luxbin 0)
-	if(test -x /bin/lux)
-		luxbin=/bin/lux
-if(~ $#luxbin 0){
+luxbin=$home/bin/$cputype/lux
+if(! test -x $luxbin)
+	luxbin=$home/bin/lux
+if(! test -x $luxbin)
+	luxbin=/bin/lux
+if(! test -x $luxbin){
 	echo '# acme-ai: lux not found' >[1=2]
 	echo '# acme-ai: lux not found'
 	exit nolux
@@ -45,16 +39,3 @@ if(~ $#luxbin 0){
 
 cd $lib
 $luxbin dispatch.lux
-status=$status
-if(~ $status error){
-	echo '# acme-ai: lux failed ('^$status^')' >[1=2]
-	exit luxfail
-}
-if(~ $status compile){
-	echo '# acme-ai: lux compile error' >[1=2]
-	exit luxfail
-}
-if(~ $status runtime){
-	echo '# acme-ai: lux runtime error' >[1=2]
-	exit luxfail
-}
